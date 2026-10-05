@@ -1,0 +1,22 @@
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.ruff_cache/
+.pytest_cache/
+
+# node / web (phase 3)
+node_modules/
+web/dist/
+
+# runtime data (audio lives outside git)
+data/
+*.wav
+*.aif
+*.aiff
+
+# hi-res mockup renders (regenerate with: make mockups-hires)
+design/mockups/*@2x.png
+
+.DS_Store
+.env
