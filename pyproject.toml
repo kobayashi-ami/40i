@@ -1,0 +1,16 @@
+[project]
+name = "1260"
+version = "0.0.0"
+description = "SP-1200 drums x MPC60II samples — offline timbre engine (render WAV through modelled hardware stages)"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+# Phase 0: procedural UI mockups (design/render_mockups.py)
+design = ["pillow>=11", "numpy>=2"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
