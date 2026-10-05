@@ -1518,10 +1518,11 @@ def screen_ab():
 # --------------------------------------------------------------------------
 
 
-def screen_mobile():
-    W, H = 390, 844
-    c = Canvas(W, H)
-    c.metal(0, 0, W, H, T["bg0"], amp=1.0, shade=0)
+MOBILE_TABS = ["JOBS", "LISTEN", "WORKERS", "LOG"]
+
+
+def mobile_chrome(c: Canvas, W, title):
+    c.metal(0, 0, W, c.h, T["bg0"], amp=1.0, shade=0)
     # status bar area (system)
     c.mono(28, 30, "14:22", 13, T["tx_hi"], kind="mono_md")
     c.rect(W - 50, 20, 24, 11, outline=T["tx_md"])
@@ -1533,9 +1534,29 @@ def screen_mobile():
     c.etext(16, 83, "1260", F("stencil", 24), T["tx_hi"])
     c.line(16, 90, 68, 90, T["ac_md"])
     c.vline_engraved(84, 62, 26)
-    c.etext(98, 82, "JOBS", F("cond", 19), T["tx_hi"], tracking=3)
+    c.etext(98, 82, title, F("cond", 19), T["tx_hi"], tracking=3)
     c.led(W - 22, 74, True, r=3)
     c.mono(W - 32, 78, "tailnet", 10, T["tx_lo"], anchor="rs")
+
+
+def mobile_tabs(c: Canvas, W, H, active):
+    c.metal(0, H - 78, W, 78, T["bg1"], amp=2)
+    c.line(0, H - 78, W, H - 78, T["line"])
+    tw = W / len(MOBILE_TABS)
+    for i, t_ in enumerate(MOBILE_TABS):
+        act = i == active
+        if act:
+            c.rect(i * tw + 14, H - 78, tw - 28, 2, fill=T["ac"])
+        col = T["ac_hi"] if act else T["tx_md"]
+        c.label(i * tw + tw / 2, H - 46, t_, 12.5, col, anchor="ms", tracking=2, kind="cond")
+        c.led(i * tw + tw / 2, H - 34, act, r=2)
+    c.rect(W / 2 - 67, H - 13, 134, 5, fill=T["tx_md"])  # home indicator
+
+
+def screen_mobile():
+    W, H = 390, 844
+    c = Canvas(W, H)
+    mobile_chrome(c, W, "JOBS")
 
     # kpis
     y = 116
@@ -1605,21 +1626,90 @@ def screen_mobile():
         c.mono(54, ry, smp, 11, T["tx_hi"])
         c.mono(W - 16, ry, pre, 9.5, T["tx_lo"], anchor="rs")
 
-    # tab bar
-    c.metal(0, H - 78, W, 78, T["bg1"], amp=2)
-    c.line(0, H - 78, W, H - 78, T["line"])
-    tabs = ["JOBS", "WORKERS", "LOG"]
-    tw = W / 3
-    for i, t_ in enumerate(tabs):
-        act = i == 0
-        if act:
-            c.rect(i * tw + 20, H - 78, tw - 40, 2, fill=T["ac"])
-        c.label(
-            i * tw + tw / 2, H - 46, t_, 13, T["ac_hi"] if act else T["tx_md"], anchor="ms", tracking=2.4, kind="cond"
-        )
-        c.led(i * tw + tw / 2, H - 34, act, r=2)
-    c.rect(W / 2 - 67, H - 13, 134, 5, fill=T["tx_md"])  # home indicator
+    mobile_tabs(c, W, H, 0)
     c.save("05_mobile_progress")
+
+
+def screen_mobile_listen():
+    """iPhone: audition renders, A/B against the source, one thumb."""
+    W, H = 390, 844
+    c = Canvas(W, H)
+    mobile_chrome(c, W, "LISTEN")
+    src = s_snare(5)
+    ren = mock_drum_path(src, tune=-2, hi=True)
+    n = min(len(src), len(ren))
+    src, ren = src[:n], ren[:n]
+
+    # now playing
+    y = 118
+    c.mono(16, y + 14, "snare_04_crack", 13, T["tx_hi"], kind="mono_md")
+    c.mono(16, y + 32, "__sp-snare-hard__tune-2.wav", 11, T["ac_hi"])
+    c.mono(W - 16, y + 14, "7f2a", 10.5, T["tx_lo"], anchor="rs")
+    c.mono(W - 16, y + 32, "24b · 48k", 10, T["tx_lo"], anchor="rs")
+
+    # waveform + playhead (drag to scrub)
+    wy = y + 48
+    c.lcd_window(16, wy, W - 32, 128)
+    c.waveform(20, wy + 4, W - 40, 120, src, hx("#3A4249"))
+    c.waveform(20, wy + 4, W - 40, 120, ren, T["ac"], grid=False, center=False, gain=0.92)
+    ph = 20 + (W - 40) * 0.34
+    c.blend_rect(20, wy + 4, ph - 20, 120, T["ac_lo"], 0.25)
+    c.line(ph, wy + 2, ph, wy + 126, T["ac_hi"], 1.2)
+    c.rect(ph - 5, wy + 120, 10, 10, fill=T["ac_hi"])
+    c.mono(16, wy + 146, "0.140", 10, T["tx_md"])
+    c.mono(W - 16, wy + 146, "0.412 s", 10, T["tx_lo"], anchor="rs")
+
+    # A/B rocker: full width, thumb-sized
+    ay = wy + 164
+    aw = (W - 32) / 2
+    c.rect(15, ay - 1, W - 30, 66, fill=T["bg0"])
+    c.rect(16, ay, aw, 64, fill=T["bg1"])
+    c.text(16 + aw / 2, ay + 30, "A", F("stencil", 28), T["tx_lo"], anchor="mm")
+    c.label(16 + aw / 2, ay + 54, "SOURCE", 10, T["tx_lo"], anchor="ms")
+    c.metal(16 + aw, ay, aw, 64, T["bg4"], amp=3)
+    c.rect(16 + aw, ay, aw, 3, fill=T["ac"])
+    c.text(16 + aw * 1.5, ay + 30, "B", F("stencil", 28), T["ac_hi"], anchor="mm")
+    c.label(16 + aw * 1.5, ay + 54, "RENDER", 10, T["ac"], anchor="ms")
+    c.mono(W / 2, ay + 82, "tap to flip · position is kept", 9.5, T["tx_lo"], anchor="ms")
+
+    # transport
+    ty = ay + 98
+    c.rect(15, ty - 1, 74, 74, fill=T["bg0"])
+    c.rect(16, ty, 72, 72, fill=T["ac_lo"], outline=T["ac"])
+    c.rect(36, ty + 22, 9, 28, fill=T["ac_hi"])  # pause (playing)
+    c.rect(59, ty + 22, 9, 28, fill=T["ac_hi"])
+    c.lcd_window(100, ty, W - 116, 34)
+    c.seg7(110, ty + 7, 20, "-2", gap=4)
+    c.label(160, ty + 23, "TUNE", 10, T["tx_lo"])
+    c.mono(W - 26, ty + 23, "×0.8909", 10.5, T["ac"], anchor="rs")
+    c.button(100, ty + 42, 80, 30, "LOOP", "primary", size=11)
+    c.button(188, ty + 42, W - 204, 30, "MATCH -14 LUFS", "normal", size=11)
+
+    # renders of this sample: compare tunes
+    ly = ty + 100
+    c.label(16, ly, "RENDERS · snare_04_crack", 10.5, T["tx_md"], tracking=2)
+    c.hline_engraved(16, ly + 8, W - 32)
+    rows = [
+        ("tune -2", "sp_snare_hard", True),
+        ("tune -1", "sp_snare_hard", False),
+        ("tune 0", "sp_snare_hard", False),
+        ("tune -2", "sp_snare_soft", False),
+    ]
+    for i, (tn, pr, cur) in enumerate(rows):
+        ry = ly + 16 + i * 40
+        if cur:
+            c.rect(16, ry, W - 32, 36, fill=T["ac_xlo"])
+            c.rect(16, ry, 2, 36, fill=T["ac"])
+        bx = 26
+        c.rect(bx, ry + 6, 24, 24, fill=T["bg3"], outline=T["ac"] if cur else T["line2"])
+        c.d.polygon(
+            c.pts([(bx + 9, ry + 12), (bx + 17, ry + 18), (bx + 9, ry + 24)]), fill=T["ac_hi"] if cur else T["tx_md"]
+        )
+        c.mono(62, ry + 16, tn, 12, T["ac_hi"] if cur else T["tx_hi"], kind="mono_md")
+        c.mono(62, ry + 31, pr, 9.5, T["tx_lo"])
+        c.mono(W - 26, ry + 23, "0.41s", 10, T["tx_md"], anchor="rs")
+    mobile_tabs(c, W, H, 1)
+    c.save("05b_mobile_listen")
 
 
 # --------------------------------------------------------------------------
@@ -1764,6 +1854,7 @@ SCREENS = {
     "jobs": screen_jobs,
     "ab": screen_ab,
     "mobile": screen_mobile,
+    "listen": screen_mobile_listen,
     "components": screen_components,
 }
 

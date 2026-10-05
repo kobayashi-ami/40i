@@ -13,7 +13,7 @@ SP-1200 でサンプリング（キックは low、スネアは Hi を EQ で強
 
 | Phase | 内容 | ゲート |
 |---|---|---|
-| 0 | 画面モック PNG（`design/render_mockups.py` → `design/mockups/`） | **PNG を提示して停止** → 承認後 `design.md` を書く → **再び停止** |
+| 0 | 画面モック PNG（＋iPhone 試聴画面）（`design/render_mockups.py` → `design/mockups/`） | **PNG を提示して停止** → 承認後 `design.md` を書く → **再び停止** |
 | 1 | 骨組み：Postgres/Redis、Alembic、FastAPI health、ダミーワーカー、SSE、`tailscale serve` 経由の iPhone 表示 | 冒頭で Postgres/Redis を **brew services か Docker(OrbStack) か一度だけ確認** |
 | 2 | DSP エンジン：ステージ関数＋単体テスト＋CLI | 終了時に報告 |
 | 3 | UI 実装：`design.md` に厳密に従う。無い要素は足さない（足すなら先に design.md を更新して承認） | 終了時に報告 |
@@ -52,7 +52,9 @@ SP-1200 でサンプリング（キックは low、スネアは Hi を EQ で強
 
 ## システム構成（Phase 1 以降）
 
-Browser/iPhone →（tailnet HTTPS: `tailscale serve`）→ FastAPI（REST＋SSE、ビルド済みフロントを同一オリジン配信）→ PostgreSQL（正本）／Redis（Streams キュー・進捗ハッシュ・pub/sub・TTL ハートビート）→ ワーカー（API とは別プロセス、複数台前提）。音声ファイルは Mac 上のデータディレクトリ、メタデータと sha256 は Postgres。マイグレーションは Alembic。起動は `make dev` / `make up`（launchd plist）。
+Browser/iPhone →（tailnet HTTPS: `tailscale serve`）→ FastAPI（REST＋SSE、ビルド済みフロントを同一オリジン配信）→ PostgreSQL（正本）／Redis（Streams キュー・進捗ハッシュ・pub/sub・TTL ハートビート）→ ワーカー（API とは別プロセス、複数台前提）。音声ファイルは Mac 上のデータディレクトリ、メタデータと sha256 は Postgres。
+
+**iPhone で試聴できること**（オーナー要望）：モバイルに LISTEN タブ（`design/mockups/05b_mobile_listen.png`）。処理前後を A/B で瞬時に切替（再生位置は保持）、同じサンプルの別 TUNE／別プリセットの書き出しを並べて聴き比べる。実装上の注意：API は音声を HTTP Range リクエスト対応で配信する（iOS Safari の `<audio>` は Range 必須）。A/B の切替は Web Audio で両方をデコードして同期再生する（`<audio>` の付け替えだと位置がずれる）。iOS では再生開始にユーザー操作が必要。配信は書き出した WAV そのままで、試聴のために再エンコードしない（ZOH の成分を残すため）。マイグレーションは Alembic。起動は `make dev` / `make up`（launchd plist）。
 
 ## リポジトリ構成
 

@@ -14,6 +14,7 @@ make mockups        # regenerate design/mockups/*.png
 |---|---|
 | ![library](design/mockups/01_library.png) | ![chain](design/mockups/02_chain.png) |
 | ![jobs](design/mockups/03_jobs.png) | ![a/b](design/mockups/04_ab.png) |
-| ![mobile](design/mockups/05_mobile_progress.png) | ![components](design/mockups/06_components.png) |
+| ![mobile](design/mockups/05_mobile_progress.png) | ![listen](design/mockups/05b_mobile_listen.png) |
+| ![components](design/mockups/06_components.png) | |
 
 Fonts in `design/fonts/` are under the SIL Open Font License (licence files alongside).
