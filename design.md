@@ -270,15 +270,15 @@ A（664）、B（352）、RENDER（272）の 3 カラム。
 | 03 | DRIVE（和文「ちょい歪み」） | IN、CURVE（TANH/ATAN/CUB）、MIX、OUT |
 | 04 | CAPTURE | SPEED（×1/45/USR）、7 セグの倍率、SHIFT、LOCK TUNE |
 | 05 | ADC | AA FC [HYP]、ORDER [HYP]、RATE [VER]、BITS [VER]。下段に DITHER、CLIP、LEVELS |
-| 06 | TUNE（選択中の見本） | 7 セグ、RATIO、step パターン、STEP |
+| 06 | TUNE（選択中の見本） | 7 セグ、RATIO（選んだ表の倍率とセント、下段に ET の値と step パターン）、TABLE（ET / MEAS）[HYP]、範囲 -8 … +7 |
 | 07 | VOL ENV（バイパスの見本） | DECAY、STEPS |
 | 08 | DAC | HOLD（ZOH/LIN）、RECON [HYP] |
-| 09 | ANALOG | CH 1–8、`1-2 LADDER · 3-6 FIXED · 7-8 THRU`、FC [HYP]、ENV [HYP] |
+| 09 | ANALOG | ROUTE（RING / TIP · THRU / MIX、既定値 TIP）、CH 1–8、下段に FC [HYP]・ENV [HYP]。TIP のときは FC と ENV を dim |
 | 10 | OUTPUT | RATE（48000/44100/NATIVE）、SRC（KEEP-ZOH/SINC/LINEAR） |
 
 **B：SAMPLE PATH**。見出しは Stencil の「B」（`--tx-md`）。サンプルが A に送られているときは `STANDBY — sample routed to A` と出す。段は 01 INPUT、02 RESAMPLE、03 NL-12 CODEC（候補 PWL / GAIN-RNG / MU-LAW、遷移曲線の小窓、KNEE）、04 TUNE（-12〜+6、INTERP NONE/LINEAR）、05 DE-EMPH・DAC。
 
-**RENDER**。PRESET（SAVE／FORK）、大きい TUNE の 7 セグ（高さ 92）と倍率、-3〜+1 のクイック選択、OUTPUT のファイル名を 3 行に分けて表示（最後の行を `--ac-hi`）、ATTACH のトグル 3 つ、PARAM HASH、`RENDER`（primary、高さ 56）。
+**RENDER**。PRESET（SAVE／FORK）、大きい TUNE の 7 セグ（高さ 92）と倍率（選んだ表の値）、-3〜+1 のクイック選択、OUTPUT のファイル名を 3 行に分けて表示（最後の行を `--ac-hi`）、ATTACH のトグル 3 つ、PARAM HASH、`RENDER`（primary、高さ 56）。
 
 ### 6.3 JOBS
 
@@ -290,7 +290,7 @@ A（664）、B（352）、RENDER（272）の 3 カラム。
 
 ### 6.4 A/B
 
-上段のトランスポートに A/B ロッカー、再生と停止（図形で描き、絵文字は使わない）、LOOP、位置の 7 セグ、LEVEL MATCH（LUFS）、A/B のメーター（32 セル）、PEAK。中段は重ねた波形（1036）。下段はスペクトルを A と B で左右に並べ、B には 13.02k の破線と「ZOH IMAGES」の括弧を入れる。右カラム（268）は DELTA 表（A / B / Δ）、PARAMS.JSON（HYP 行は `--tx-lo`）、FILES、`DRAG OUT`（primary）。
+上段のトランスポートに A/B ロッカー、再生と停止（図形で描き、絵文字は使わない）、LOOP、位置の 7 セグ、LEVEL MATCH（LUFS）、A/B のメーター（32 セル）、PEAK。中段は重ねた波形（1036）。見出しの右に SOLO / PAIR の切替と、PAIR で重ねる B 側のサンプル名を置く。下段はスペクトルを A と B で左右に並べ、B には 13.02k の破線と「ZOH IMAGES」の括弧を入れる。右カラム（268）は DELTA 表（A / B / Δ）、PARAMS.JSON（HYP 行は `--tx-lo`）、FILES、`DRAG OUT`（primary）。
 
 ### 6.5 iPhone：JOBS（390×844）
 
@@ -298,7 +298,7 @@ A（664）、B（352）、RENDER（272）の 3 カラム。
 
 ### 6.6 iPhone：LISTEN（390×844）
 
-ファイル名（2 行）、波形（指でなぞって位置移動、再生済み部分を被せ表示）、時刻、全幅の A/B ロッカー、再生と一時停止（72×72、primary）、TUNE の 7 セグと倍率、LOOP、MATCH、同じサンプルの書き出し一覧（再生アイコン、TUNE、プリセット、長さ）。
+ファイル名（2 行）、SOLO / PAIR の切替（PAIR のときは右に B 側のサンプル名）、波形（指でなぞって位置移動、再生済み部分を被せ表示）、時刻、全幅の A/B ロッカー、再生と一時停止（72×72、primary）、TUNE の 7 セグと倍率、LOOP、MATCH、同じサンプルの書き出し一覧（再生アイコン、TUNE、プリセット、長さ）。
 
 ---
 
@@ -344,10 +344,9 @@ A（664）、B（352）、RENDER（272）の 3 カラム。
 
 ---
 
-## 12. 未決：承認待ちの差分
+## 12. 変更履歴
 
-モックの承認後に、調査（`docs/research.md`）から出てきた変更案。**承認されるまで実装しない。** 承認されたら、モックとこの文書の両方を更新する。
-
-1. **06 TUNE に比率表の切替を足す。** `RATIO` の下に `TABLE  ET / MEAS [HYP]` の 2 択を置く。ET は 2^(n/12)、MEAS は実機の測定値の表（−1 ≈ −95 cents）。
-2. **09 ANALOG に出力経路の切替を足す。** `ROUTE  RING (FILTERED) / TIP (THRU) / MIX` の 3 択。オーナーの機材の観察に合わせて、既定値は `TIP`。
-3. **LISTEN に「組で聴く」モードを足す。** A 経路のドラムと B 経路の上ネタを同時に鳴らし、両方の A/B をまとめて切り替える。
+- 2026-10-06：モック承認後の 3 案を承認。モックと本文に反映した。
+  1. 06 TUNE に比率表の切替を追加した（ET = 2^(n/12)／MEAS = 実機の測定値の表、HYP）。既定値は MEAS。
+  2. 09 ANALOG に出力経路の切替を追加した（RING = フィルタあり／TIP = フィルタ無し／MIX）。既定値は TIP（オーナーの機材の観察から）。
+  3. LISTEN（iPhone）と A/B（デスクトップ）に SOLO / PAIR を追加した。PAIR は A 経路のドラムと B 経路の上ネタを同時に鳴らし、A/B の切替は両方に効く。

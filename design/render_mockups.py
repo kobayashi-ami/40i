@@ -1040,10 +1040,10 @@ def screen_chain():
     c.lcd_window(col(0), y0 + 10, cw, 60)
     c.seg7(col(0) + 18, y0 + 18, 44, "-2")
     c.label(col(1), y0 + 26, "RATIO", 11, T["tx_md"], tracking=1.4)
-    c.mono(col(1), y0 + 46, "2^(-2/12) = 0.890899", 12, T["ac_hi"])
-    c.mono(col(1), y0 + 65, "step 1 1 1 1 1 1 1 1 0 1 …", 10, T["tx_lo"])
-    seg_field(c, col(3), y0 + 17, cw, "STEP", ["SEMI", "FINE"], 0)
-    c.mono(col(3), y0 + 65, "range TBD", 9.5, T["tx_lo"])
+    c.mono(col(1), y0 + 46, "MEAS ×0.891635  -198.6¢", 12, T["ac_hi"])
+    c.mono(col(1), y0 + 65, "ET ×0.890899 · step 1 1 1 1 1 1 1 1 0 1", 9.5, T["tx_lo"])
+    seg_field(c, col(3), y0 + 17, cw, "TABLE", ["ET", "MEAS"], 1, tag="HYP")
+    c.mono(col(3), y0 + 65, "range -8 … +7", 9.5, T["tx_lo"])
 
     y0 = nxt(50)
     stage_box(c, sx, y0, sw, 50, "07", "VOL ENV", "8-bit steps", on=False, spine_x=spine)
@@ -1055,12 +1055,14 @@ def screen_chain():
     seg_field(c, col(0), y0 + 14, cw, "HOLD", ["ZOH", "LIN"], 0)
     c.slider(col(1), y0 + 14, cw, "RECON", "OFF", 0.0, tag="HYP")
 
-    y0 = nxt(66)
-    stage_box(c, sx, y0, sw, 66, "09", "ANALOG", "per channel", spine_x=spine)
-    seg_field(c, col(0), y0 + 12, span2, "CH", [str(i) for i in range(1, 9)], 0, mono=True)
-    c.mono(col(0), y0 + 60, "1-2 LADDER · 3-6 FIXED · 7-8 THRU", 9, T["tx_lo"])
-    c.slider(col(2), y0 + 14, cw, "FC", "9.8k", 0.58, tag="HYP")
-    c.slider(col(3), y0 + 14, cw, "ENV", "0.25", 0.25, tag="HYP")
+    y0 = nxt(80)
+    stage_box(c, sx, y0, sw, 80, "09", "ANALOG", "route · channel", spine_x=spine)
+    seg_field(c, col(0), y0 + 10, span2, "ROUTE", ["RING", "TIP · THRU", "MIX"], 1, size=10)
+    seg_field(c, col(2), y0 + 10, span2, "CH", [str(i) for i in range(1, 9)], 0, mono=True, size=10)
+    c.hline_engraved(px0, y0 + 50, pw)
+    c.slider(col(0), y0 + 54, cw, "FC", "—", 0.58, tag="HYP", dim=True)
+    c.slider(col(1), y0 + 54, cw, "ENV", "—", 0.25, tag="HYP", dim=True)
+    c.mono(col(2), y0 + 66, "tip = unfiltered · owner rig", 9, T["tx_lo"])
 
     y0 = nxt(56)
     stage_box(c, sx, y0, sw, 56, "10", "OUTPUT", "48k · 24-bit", spine_x=spine)
@@ -1146,7 +1148,7 @@ def screen_chain():
     c.lcd_window(ix + 16, 242, iw - 32, 120)
     c.seg7(ix + 70, 256, 92, "-2", gap=18)
     c.mono(ix + 28, 354, "A·06", 9.5, T["tx_lo"])
-    c.mono(ix + iw - 28, 354, "×0.8909", 9.5, T["ac"], anchor="rs")
+    c.mono(ix + iw - 28, 354, "×0.8916", 9.5, T["ac"], anchor="rs")
     c.seg(ix + 16, 374, iw - 32, 30, ["-3", "-2", "-1", "0", "+1"], 1, size=13, mono=True)
     c.hline_engraved(ix + 12, 422, iw - 24)
     c.label(ix + 16, 446, "OUTPUT", 10.5, T["tx_lo"])
@@ -1424,6 +1426,8 @@ def screen_ab():
 
     # waveform overlay
     c.panel(104, 156, 1036, 214, "WAVEFORM", "1", tone="bg1", amp=1.3)
+    c.mono(1124 - 150, 179, "+ B loop_rhodes_92", 10, T["tx_lo"], anchor="rs")
+    c.seg(1124 - 140, 166, 120, 18, ["SOLO", "PAIR"], 1, size=10)
     c.lcd_window(118, 200, 1008, 152)
     c.waveform(122, 204, 1000, 144, a, hx("#3A4249"), grid=True)
     c.waveform(122, 204, 1000, 144, b, T["ac"], grid=False, center=False, gain=0.92)
@@ -1647,8 +1651,12 @@ def screen_mobile_listen():
     c.mono(W - 16, y + 14, "7f2a", 10.5, T["tx_lo"], anchor="rs")
     c.mono(W - 16, y + 32, "24b · 48k", 10, T["tx_lo"], anchor="rs")
 
+    # solo / pair: drums (A) alone, or together with the routed B sample
+    c.seg(16, y + 46, 150, 24, ["SOLO", "PAIR"], 1, size=11)
+    c.mono(W - 16, y + 62, "+ B loop_rhodes_92", 10, T["tx_lo"], anchor="rs")
+
     # waveform + playhead (drag to scrub)
-    wy = y + 48
+    wy = y + 84
     c.lcd_window(16, wy, W - 32, 128)
     c.waveform(20, wy + 4, W - 40, 120, src, hx("#3A4249"))
     c.waveform(20, wy + 4, W - 40, 120, ren, T["ac"], grid=False, center=False, gain=0.92)
@@ -1681,7 +1689,7 @@ def screen_mobile_listen():
     c.lcd_window(100, ty, W - 116, 34)
     c.seg7(110, ty + 7, 20, "-2", gap=4)
     c.label(160, ty + 23, "TUNE", 10, T["tx_lo"])
-    c.mono(W - 26, ty + 23, "×0.8909", 10.5, T["ac"], anchor="rs")
+    c.mono(W - 26, ty + 23, "MEAS ×0.8916", 10.5, T["ac"], anchor="rs")
     c.button(100, ty + 42, 80, 30, "LOOP", "primary", size=11)
     c.button(188, ty + 42, W - 204, 30, "MATCH -14 LUFS", "normal", size=11)
 
