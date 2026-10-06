@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1260 smoke</title>
+<!-- Phase 1 diagnostic page only. Not the product UI: Phase 3 builds that from design.md. Tokens are reused so it does not clash. -->
+<style>
+:root {
+  --bg0:#08090B; --bg1:#0E1114; --bg2:#14181C; --bg3:#1B2025; --line:#2A3137; --line2:#394149;
+  --tx-hi:#C5CCD3; --tx-md:#88919B; --tx-lo:#58616B; --ac:#6C97BE; --ac-hi:#A8C8E4; --ac-md:#3E5F7E;
+  --ac-lo:#1D3044; --ac-xlo:#111B25; --fail:#E6EBF0; --fail-bg:#23282D;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg0); color:var(--tx-hi); font:12px/1.45 ui-monospace, Menlo, monospace;
+  padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+h1 { font:600 18px/1 "Barlow Condensed", "Arial Narrow", sans-serif; letter-spacing:.2em; margin:0; }
+.lab { font:500 11px/1 "Barlow Condensed", "Arial Narrow", sans-serif; letter-spacing:.14em; text-transform:uppercase; color:var(--tx-md); }
+header { display:flex; align-items:center; gap:12px; padding-bottom:10px; border-bottom:1px solid var(--line); }
+header .note { margin-left:auto; color:var(--tx-lo); font-size:10px; text-align:right; }
+.row { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+.kpi { background:var(--bg1); border:1px solid var(--line); padding:8px 10px; min-width:76px; }
+.kpi b { display:block; font-size:22px; color:var(--ac-hi); font-weight:500; font-variant-numeric:tabular-nums; }
+.kpi.bad b { color:var(--fail); }
+.led { display:inline-block; width:7px; height:7px; border-radius:50%; background:#192027; margin-right:6px; vertical-align:middle; }
+.led.on { background:var(--ac-hi); box-shadow:0 0 6px rgba(108,151,190,.6); }
+.led.off { background:var(--fail); }
+button { font:600 12px "Barlow Condensed","Arial Narrow",sans-serif; letter-spacing:.14em; text-transform:uppercase;
+  background:var(--bg3); color:var(--tx-hi); border:1px solid var(--line2); padding:9px 12px; cursor:pointer; }
+button.primary { background:var(--ac-lo); border-color:var(--ac); color:var(--ac-hi); }
+button:focus-visible { outline:2px solid var(--ac-hi); outline-offset:2px; }
+section { margin-top:14px; }
+.card { background:var(--bg2); border:1px solid var(--bg0); border-left:3px solid var(--line2); padding:8px 10px; margin-top:6px; }
+.card.running { border-left-color:var(--ac); }
+.card.failed { border-left-color:var(--fail); }
+.card .top { display:flex; gap:8px; align-items:baseline; }
+.card .st { margin-left:auto; font-size:10px; padding:1px 6px; border:1px solid var(--line2); color:var(--tx-md); }
+.card.running .st { border-color:var(--ac); color:var(--ac-hi); background:var(--ac-lo); }
+.card.succeeded .st { border-color:var(--ac-md); color:var(--ac); }
+.card.failed .st { border-color:var(--fail); color:var(--fail); background:var(--fail-bg); }
+.bars { display:flex; gap:2px; margin-top:6px; }
+.bars i { flex:1; height:9px; background:var(--bg0); border:1px solid #1C2228; position:relative; overflow:hidden; }
+.bars i.done { background:var(--ac); border-color:var(--ac); }
+.bars i.failed { background:repeating-linear-gradient(135deg,var(--fail) 0 1px,var(--fail-bg) 1px 4px); border-color:var(--fail); }
+.bars i > span { position:absolute; inset:0 auto 0 0; background:var(--ac-hi); }
+.meta { color:var(--tx-lo); font-size:10px; margin-top:4px; word-break:break-all; }
+.log { background:#070B0F; border:1px solid #1A232C; padding:8px; max-height:260px; overflow:auto; font-size:10.5px; }
+.log div { white-space:pre-wrap; color:var(--tx-md); }
+.log .ERR { color:var(--fail); background:var(--fail-bg); }
+.log .WARN { color:var(--tx-hi); }
+.err { color:var(--fail); white-space:pre-wrap; font-size:10px; margin-top:6px; max-height:120px; overflow:auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>1260</h1><span class="lab">smoke · phase 1</span>
+  <div class="note"><span id="conn" class="led"></span><span id="conntext">connecting</span><br><span id="who"></span></div>
+</header>
+
+<div class="row" id="kpis"></div>
+<div class="row">
+  <button class="primary" id="b-dummy">Dummy job</button>
+  <button id="b-slow">Slow job (20 s)</button>
+  <button id="b-fail">Fail @ adc</button>
+</div>
+
+<section><div class="lab">Workers</div><div id="workers"></div></section>
+<section><div class="lab">Jobs</div><div id="jobs"></div></section>
+<section><div class="lab">Log</div><div class="log" id="log"></div></section>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let snap = null, refetch = null;
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function render() {
+  if (!snap) return;
+  const c = snap.counts || {};
+  $("kpis").innerHTML = [["Queue", snap.queue], ["Running", c.running || 0], ["Done", c.succeeded || 0],
+    ["Failed", c.failed || 0, (c.failed || 0) > 0], ["Redis", snap.redis ? "on" : "off", !snap.redis]]
+    .map(([k, v, bad]) => `<div class="kpi ${bad ? "bad" : ""}"><span class="lab">${k}</span><b>${esc(v)}</b></div>`).join("");
+  $("workers").innerHTML = snap.workers.map((w) => `<div class="card ${w.state === "lost" ? "failed" : (w.state === "busy" ? "running" : "")}">
+    <div class="top"><span class="led ${w.state === "lost" ? "off" : (w.state === "stopped" ? "" : "on")}"></span>${esc(w.id)}
+    <span class="st">${esc(w.state)}</span></div><div class="meta">heartbeat ${Number(w.heartbeat_age_s).toFixed(1)}s · v${esc(w.version)}</div></div>`).join("") || `<div class="meta">no workers yet</div>`;
+  $("jobs").innerHTML = snap.jobs.map((j) => {
+    const bars = j.stages.map((s) => s.state === "succeeded" ? `<i class="done"></i>` : s.state === "failed" ? `<i class="failed"></i>`
+      : s.state === "running" ? `<i><span style="width:${Math.round(s.progress * 100)}%"></span></i>` : `<i></i>`).join("");
+    const cur = j.stages.find((s) => s.state === "running");
+    return `<div class="card ${j.state}"><div class="top"><b>${esc(j.short)}</b><span>${cur ? esc(cur.ordinal + 1 + " " + cur.name) : ""}</span>
+      <span class="st">${esc(j.state)}</span></div><div class="bars">${bars}</div>
+      <div class="meta">attempt ${j.attempts}${j.worker_id ? " · " + esc(j.worker_id) : ""}${j.created_by ? " · " + esc(j.created_by) : ""}</div>
+      ${j.state === "failed" && j.error ? `<div class="err">${esc(j.error)}</div><button data-retry="${j.id}">Retry</button>` : ""}
+      ${(j.state === "queued" || j.state === "running") ? `<button data-cancel="${j.id}">Cancel</button>` : ""}</div>`;
+  }).join("");
+  $("log").innerHTML = snap.log.slice(-80).map((e) =>
+    `<div class="${e.level}">${esc(String(e.ts).slice(11, 23))} ${esc(e.level.padEnd(4))} ${esc(e.source)}  ${esc(e.message)}</div>`).join("");
+  $("log").scrollTop = 1e9;
+}
+
+function scheduleRefetch() {
+  clearTimeout(refetch);
+  refetch = setTimeout(async () => { snap = await (await fetch("/api/snapshot")).json(); render(); }, 250);
+}
+
+function connect() {
+  const es = new EventSource("/api/events");
+  es.addEventListener("snapshot", (e) => { snap = JSON.parse(e.data); render(); });
+  es.addEventListener("update", (e) => {
+    const ev = JSON.parse(e.data);
+    if (ev.type === "progress" && snap) {
+      const j = snap.jobs.find((x) => x.id === ev.job_id);
+      if (j && ev.stage_index !== undefined) {
+        j.stages.forEach((s) => {
+          if (s.ordinal < +ev.stage_index) s.state = "succeeded";
+          if (s.ordinal === +ev.stage_index) { s.state = "running"; s.progress = +ev.stage_progress; }
+        });
+        j.state = "running"; render(); return;
+      }
+    }
+    scheduleRefetch();
+  });
+  es.onopen = () => { $("conn").className = "led on"; $("conntext").textContent = "live"; };
+  es.onerror = () => { $("conn").className = "led off"; $("conntext").textContent = "reconnecting"; };
+}
+
+async function post(url, body) {
+  await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body || {}) });
+}
+$("b-dummy").onclick = () => post("/api/jobs/dummy", {});
+$("b-slow").onclick = () => post("/api/jobs/dummy", { stage_seconds: 2, ticks: 10 });
+$("b-fail").onclick = () => post("/api/jobs/dummy", { fail_at: "adc" });
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  if (t.dataset.retry) post(`/api/jobs/${t.dataset.retry}/retry`);
+  if (t.dataset.cancel) post(`/api/jobs/${t.dataset.cancel}/cancel`);
+});
+fetch("/api/health").then((r) => r.json()).then((h) => { $("who").textContent = `db ${h.db} · redis ${h.redis} · v${h.version}`; });
+connect();
+</script>
+</body>
+</html>
