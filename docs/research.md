@@ -43,7 +43,9 @@ Weak evidence: room mic, AAC recording with a hard low-pass at ~15.6 kHz. Usable
 - Tempo ≈ 95.9 BPM (display ≈ 96.0), 2-bar loop, snare on 2 and 4. MPC sample (tonal, 250 Hz–5 kHz, pitch glides) enters on the bar line at 12.4 s.
 - Kick and snare: energy continues smoothly through 13.02 kHz. Image/mirror level ratio (13.3–15.3 kHz vs 10.7–12.7 kHz) is −0.4 … −2.9 dB (mean ≈ −1.6) and does not change over the first 90 ms of each hit.
 - Predicted ratio for the same bands: unfiltered ZOH −1.7 dB; ch3–4 curve ≈ −10.8 dB; ch5–6 curve ≈ −13.3 dB; ch1–2 dynamic filter would drift more negative as the envelope closes.
-- Reading: the owner's kick and snare reach the speakers **unfiltered** (ch7–8, or individual outs on mono plugs). To confirm, photograph the rear panel cabling.
+- Reading: the owner's kick and snare reach the speakers **unfiltered** (ch7–8, or individual outs on mono plugs).
+- Hats (11 hits) give the same ratio (mean −1.6 dB). Three different sounds all unfiltered makes **individual outs on mono (TS) plugs** the more likely wiring; all three on ch7–8 via MIX OUT is possible only if they share channels. The engine result is the same either way: default route `tip` (unfiltered). Owner chose not to check the rear panel (2026-10-06), so this stays an inference.
+- TUNE from the recording: spectral autocorrelation of averaged kick and snare spectra (2–12.5 kHz) shows no significant peak at the drop-sample modulation spacing (1393 / 1462 / 2822 / 2841 Hz; all below the 99th percentile of the lag distribution; 2.8 kHz is faintly above median for both). The room/mic recording cannot tell −1 from −2 or ET from measured ratios. Owner declined line recordings for now; the choice moves to listening (both ratio tables selectable).
 
 ### Sources
 
