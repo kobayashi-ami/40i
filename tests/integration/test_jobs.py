@@ -8,7 +8,7 @@ from sqlalchemy import select
 from core import bus
 from core.db import session_scope
 from core.models import Job, JobEvent, JobStage
-from tests.conftest import wait_for
+from tests.integration.conftest import wait_for
 
 
 def job(url, jid):

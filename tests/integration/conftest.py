@@ -17,7 +17,7 @@ import httpx
 import psycopg
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 ADMIN_URL = os.environ.get("TEST_DATABASE_ADMIN_URL", "postgresql://1260:1260@127.0.0.1:55432/1260")
 REDIS_URL = os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:56379/15")
 DB_NAME = f"t1260_{uuid.uuid4().hex[:8]}"

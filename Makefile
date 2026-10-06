@@ -1,7 +1,7 @@
 UV ?= uv
 WORKERS ?= 2
 
-.PHONY: setup infra infra-down migrate dev up down status serve unserve test lint mockups mockups-hires
+.PHONY: setup infra infra-down migrate dev up down status serve unserve test test-engine lint mockups mockups-hires
 
 setup:            ## install Python deps and create .env
 	$(UV) sync
@@ -34,8 +34,11 @@ serve:            ## publish on the tailnet (HTTPS, MagicDNS) via tailscale serv
 unserve:
 	scripts/tailscale_serve.sh off
 
-test:             ## integration tests (needs `make infra`)
+test:             ## all tests (integration tests need `make infra`)
 	$(UV) run pytest
+
+test-engine:      ## DSP engine tests only (no database)
+	$(UV) run pytest tests/engine
 
 lint:
 	$(UV) run ruff check . && $(UV) run ruff format --check .

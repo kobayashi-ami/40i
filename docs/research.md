@@ -68,6 +68,24 @@ Weak evidence: room mic, AAC recording with a hard low-pass at ~15.6 kHz. Usable
 | Pitch-shift interpolation method | HYPOTHESIS | — | `none` / `linear` switch |
 | 60 and 60II acoustically ~identical | VERIFIED (claim) | owner pre-research | single model |
 
+## Engine mapping (Phase 2)
+
+Every row above is a parameter in `engine/params.py` (`python -m engine params` prints them with VER/HYP).
+Defaults chosen where the research is open:
+
+| Parameter | Default | Why |
+|---|---|---|
+| `sp.adc.aa` / `aa_fc` | `ellip4` @ 12.5 kHz | the `pitcher` model; a 4th-order filter still lets 13–16 kHz partly alias |
+| `sp.tune.table` | `measured` | owner approved (design.md §12); ET selectable |
+| `sp.analog.route` | `tip` (unfiltered) | owner rig observation (kick, snare, hats all unfiltered) |
+| `sp.analog.fixed_curve` | `pitcher` | ch3–4 ≈ 7.5 kHz curve, ch5–6 ≈ 10 kHz Butterworth-7 |
+| `sp.analog` ch1–2 | ZDF 4-pole ladder, cutoff ×2^(4·env·level) | behavioural SSM2044 stand-in, all values HYP |
+| `mpc.codec.curve` | `pwl` (A-law-like, 1+3+8 bits) | the three candidates differ most on quiet material |
+| `mpc.input.emph` | on, +6 dB shelf @ 3.2 kHz | reported, values unknown |
+
+The analog domain runs at 4 × 26 041.67 Hz so the hold's images and the output filters interact before the export
+resampler, which is the only place images above the export Nyquist are removed (`output.src = keep_zoh`).
+
 ## Calibration hooks (Phase 4)
 
 Every HYPOTHESIS parameter carries `{status, candidates | range, default, note}` in its metadata so a calibration
