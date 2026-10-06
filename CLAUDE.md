@@ -21,7 +21,7 @@ SP-1200 でサンプリング（キックは low、スネアは Hi を EQ で強
 
 各フェーズの終わりに「何をしたか／何が未確定か／次に何をするか」を短く報告する。
 
-**現在地：Phase 1（骨組み）。Phase 0 は完了（モックと design.md を 2026-10-06 に承認）。Postgres/Redis は OrbStack（Docker Compose）で動かす。**
+**現在地：Phase 2（DSP エンジン）実装済み・報告待ち。Phase 1 は Mac 上での確認（OrbStack・launchd・tailscale serve・iPhone 表示）待ち。Phase 0 は完了（2026-10-06 承認）。**
 
 ---
 
@@ -68,10 +68,12 @@ compose.yaml              Postgres 16 + Redis 7（OrbStack、127.0.0.1 のみ）
 alembic.ini, migrations/  Alembic（0001 initial schema）
 core/                     settings, db, models（正本スキーマ）, bus（Redis）, jobs（ライフサイクル・reaper・reconcile・snapshot）
 api/                      FastAPI（REST + SSE）, smoke.html（Phase 1 の確認ページ。Phase 3 で本 UI に置き換え）
-worker/                   python -m worker（Phase 1 はダミーステージ）
+worker/                   python -m worker（今はダミーステージ。エンジンへの接続はサンプル取り込み API と一緒に行う）
+engine/                   DSP：params（VER/HYP 表・プリセット）, sp, mpc, render（WAV/PNG/JSON）, python -m engine
 scripts/                  dev.sh, launchd.sh, tailscale_serve.sh
 deploy/launchd/           LaunchAgent テンプレート
-tests/                    結合テスト（実 Postgres/Redis、API とワーカーを子プロセスで起動）
+tests/engine/             エンジンの単体テスト（DB 不要）
+tests/integration/        結合テスト（実 Postgres/Redis、API とワーカーを子プロセスで起動）
 design/
   render_mockups.py       Phase 0：手続き的モック生成（Pillow + numpy）
   fonts/                  OFL フォント（Saira Stencil One / Barlow Condensed / IBM Plex Mono / Share Tech Mono）
@@ -79,8 +81,8 @@ design/
 docs/
   research.md             音響的事実と未確定事項（VERIFIED / HYPOTHESIS）
   runbook.md              Mac での起動・常駐・tailnet 公開・障害時の振る舞い
-# Phase 2 以降に追加予定
-engine/   web/
+# Phase 3 で追加予定
+web/
 ```
 
 ## コマンド
@@ -88,7 +90,10 @@ engine/   web/
 ```
 make setup && make infra && make migrate
 make dev                  # API + ワーカー（前面）。http://127.0.0.1:8260/
-make test                 # 結合テスト（make infra が前提）
+make test                 # 全テスト（結合テストは make infra が前提）
+make test-engine          # エンジンだけ（DB 不要）
+uv run python -m engine render in.wav --preset sp_snare_hard --tune -2
+uv run python -m engine params    # 全パラメータと VER/HYP
 make up / make down       # launchd 常駐
 make serve / unserve      # tailscale serve（tailnet 内のみ、funnel は使わない）
 make lint
