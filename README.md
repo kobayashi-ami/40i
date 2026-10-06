@@ -3,11 +3,13 @@
 SP-1200 drums × MPC60II samples — an offline timbre engine. Drop a WAV in, get it back rendered through modelled
 hardware stages (12-bit linear @ 26.04 kHz with drop-sample TUNE for drums; non-linear 12-bit @ 40 kHz for samples).
 
-Status: **Phase 0 — screen mockups, awaiting approval.** See `CLAUDE.md` for the phase gates and rules,
-`docs/research.md` for what is verified vs. hypothesis.
+Status: **Phase 1 — skeleton** (Postgres/Redis, Alembic, FastAPI + SSE, dummy-stage workers, launchd, tailscale serve).
+See `CLAUDE.md` for the phase gates and rules, `design.md` for the UI rules, `docs/research.md` for what is verified
+vs. hypothesis, and `docs/runbook.md` to run it on the Mac.
 
 ```
-make mockups        # regenerate design/mockups/*.png
+make setup && make infra && make migrate && make dev   # http://127.0.0.1:8260/
+make test
 ```
 
 | | |

@@ -62,23 +62,37 @@ Browser/iPhone →（tailnet HTTPS: `tailscale serve`）→ FastAPI（REST＋SSE
 CLAUDE.md                 このファイル
 design.md                 UI の規則（トークン・部品・状態・画面）。Phase 3 はこれに厳密に従う
 README.md
-pyproject.toml            uv 管理（Phase 0 は design グループのみ）
-Makefile
+pyproject.toml            uv 管理（dev / design グループ）
+Makefile                  setup / infra / migrate / dev / up / serve / test
+compose.yaml              Postgres 16 + Redis 7（OrbStack、127.0.0.1 のみ）
+alembic.ini, migrations/  Alembic（0001 initial schema）
+core/                     settings, db, models（正本スキーマ）, bus（Redis）, jobs（ライフサイクル・reaper・reconcile・snapshot）
+api/                      FastAPI（REST + SSE）, smoke.html（Phase 1 の確認ページ。Phase 3 で本 UI に置き換え）
+worker/                   python -m worker（Phase 1 はダミーステージ）
+scripts/                  dev.sh, launchd.sh, tailscale_serve.sh
+deploy/launchd/           LaunchAgent テンプレート
+tests/                    結合テスト（実 Postgres/Redis、API とワーカーを子プロセスで起動）
 design/
   render_mockups.py       Phase 0：手続き的モック生成（Pillow + numpy）
   fonts/                  OFL フォント（Saira Stencil One / Barlow Condensed / IBM Plex Mono / Share Tech Mono）
   mockups/                生成 PNG（1x をコミット、@2x は --hires で生成・gitignore）
 docs/
   research.md             音響的事実と未確定事項（VERIFIED / HYPOTHESIS）
-# Phase 1 以降に追加予定
-api/   worker/   engine/   web/   migrations/   deploy/launchd/
+  runbook.md              Mac での起動・常駐・tailnet 公開・障害時の振る舞い
+# Phase 2 以降に追加予定
+engine/   web/
 ```
 
 ## コマンド
 
 ```
-make mockups              # design/mockups/*.png を再生成（uv があれば uv、無ければ python3）
-make mockups-hires        # @2x も出力
+make setup && make infra && make migrate
+make dev                  # API + ワーカー（前面）。http://127.0.0.1:8260/
+make test                 # 結合テスト（make infra が前提）
+make up / make down       # launchd 常駐
+make serve / unserve      # tailscale serve（tailnet 内のみ、funnel は使わない）
+make lint
+make mockups              # design/mockups/*.png を再生成
 ```
 
 ## デザイン指針（詳細は design.md）

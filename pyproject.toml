@@ -1,16 +1,36 @@
 [project]
 name = "1260"
-version = "0.0.0"
+version = "0.1.0"
 description = "SP-1200 drums x MPC60II samples — offline timbre engine (render WAV through modelled hardware stages)"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0.30",
+    "psycopg[binary]>=3.2",
+    "alembic>=1.13",
+    "redis>=5.0",
+    "pydantic-settings>=2.4",
+]
 
 [dependency-groups]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.6"]
 # Phase 0: procedural UI mockups (design/render_mockups.py)
 design = ["pillow>=11", "numpy>=2"]
+
+[tool.uv]
+default-groups = ["dev"]
+package = false
 
 [tool.ruff]
 line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["core", "api", "worker"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

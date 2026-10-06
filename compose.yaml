@@ -1,0 +1,41 @@
+# Postgres + Redis for 1260, run under OrbStack (Docker Compose).
+# Ports are published on 127.0.0.1 only: nothing here is reachable from the LAN or the tailnet.
+# (Opening them to the tailnet for remote workers is documented in docs/runbook.md, not enabled.)
+name: "1260"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "1260"
+      POSTGRES_PASSWORD: "1260"
+      POSTGRES_DB: "1260"
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U 1260 -d 1260"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # AOF keeps the stream across restarts; Postgres stays the source of truth either way.
+    command: ["redis-server", "--appendonly", "yes", "--save", ""]
+    ports:
+      - "127.0.0.1:56379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pgdata:
+  redisdata:
