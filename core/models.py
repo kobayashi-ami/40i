@@ -45,9 +45,14 @@ class Sample(Base):
     length_s: Mapped[float | None] = mapped_column(Float)
     sample_rate: Mapped[int | None] = mapped_column(Integer)
     role: Mapped[str | None] = mapped_column(String(8))
+    route: Mapped[str] = mapped_column(String(4), nullable=False, default="sp", server_default="sp")  # A=sp, B=mpc
+    stored_name: Mapped[str | None] = mapped_column(Text)  # file under DATA_DIR/samples/
     created_at: Mapped[datetime] = _now()
 
-    __table_args__ = (CheckConstraint(f"role IS NULL OR role IN {ROLES}", name="samples_role"),)
+    __table_args__ = (
+        CheckConstraint(f"role IS NULL OR role IN {ROLES}", name="samples_role"),
+        CheckConstraint(f"route IN {PATHS}", name="samples_route"),
+    )
 
 
 class Preset(Base):

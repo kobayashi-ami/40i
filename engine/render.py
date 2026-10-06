@@ -44,22 +44,30 @@ def spectrogram_png(x: np.ndarray, sr: float, path: Path, width: int = 1200, hei
     Image.fromarray(rgb.astype(np.uint8)).resize((width, height), Image.BILINEAR).save(path, optimize=True)
 
 
-def render_file(
-    src: Path, preset: str, overrides: dict | None = None, out_dir: Path | None = None, attach: bool = True
+def write_outputs(
+    y: np.ndarray,
+    rate: float,
+    info: dict,
+    path: str,
+    params: dict,
+    preset: str,
+    src_name: str,
+    src_sr: float,
+    src_sha256: str,
+    out_dir: Path,
+    attach: bool = True,
 ) -> dict:
-    x, sr = sf.read(str(src), dtype="float64", always_2d=False)
-    y, rate, info, path, params = render_array(x, sr, preset, overrides)
-    out_dir = Path(out_dir or src.parent)
+    """Write `<name>.wav` (24-bit), and optionally `<name>__spectro.png` and `<name>__params.json`."""
+    out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    name = output_name(Path(src), preset, path, params)
+    name = output_name(Path(src_name), preset, path, params)
     wav = out_dir / f"{name}.wav"
-    # 24-bit PCM; samplerate must be an integer for WAV, the native SP rate rounds to 26042 in the header.
-    pcm = np.clip(y, -1.0, 1.0)
-    sf.write(str(wav), pcm, int(round(rate)), subtype="PCM_24")
+    # 24-bit PCM; WAV needs an integer rate, so the native SP rate is written as 26042 in the header.
+    sf.write(str(wav), np.clip(y, -1.0, 1.0), int(round(rate)), subtype="PCM_24")
     digest = hashlib.sha256(wav.read_bytes()).hexdigest()
     meta = {
         "engine": ENGINE_VERSION,
-        "source": {"name": Path(src).name, "sr": sr, "sha256": hashlib.sha256(Path(src).read_bytes()).hexdigest()},
+        "source": {"name": src_name, "sr": src_sr, "sha256": src_sha256},
         "preset": preset,
         "path": path,
         "params": params,
@@ -75,3 +83,14 @@ def render_file(
         js.write_text(json.dumps(meta, indent=2, ensure_ascii=False, default=str))
         files.update(png=str(png), json=str(js))
     return {"files": files, **meta}
+
+
+def render_file(
+    src: Path, preset: str, overrides: dict | None = None, out_dir: Path | None = None, attach: bool = True
+) -> dict:
+    x, sr = sf.read(str(src), dtype="float64", always_2d=False)
+    y, rate, info, path, params = render_array(x, sr, preset, overrides)
+    src_sha = hashlib.sha256(Path(src).read_bytes()).hexdigest()
+    return write_outputs(
+        y, rate, info, path, params, preset, Path(src).name, sr, src_sha, Path(out_dir or Path(src).parent), attach
+    )

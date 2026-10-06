@@ -1,0 +1,47 @@
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg0) url("/tex/metal-bg0.png");
+  color: var(--tx-hi);
+  font: 400 var(--fs-meta) / 1.45 var(--f-mono);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ac-hi); outline-offset: 2px; }
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--ac-lo); }
+
+/* type roles (design.md §3) */
+.stencil { font-family: var(--f-stencil); font-weight: 400; }
+.title { font: 600 var(--fs-title) / 1 var(--f-cond); letter-spacing: 0.18em; text-transform: uppercase; }
+.label { font: 500 var(--fs-label) / 1 var(--f-cond); letter-spacing: 0.13em; text-transform: uppercase; color: var(--tx-md); }
+.label.lo { color: var(--tx-lo); }
+.mono { font-family: var(--f-mono); }
+.v { font: 500 var(--fs-value) / 1.2 var(--f-mono); color: var(--tx-hi); }
+.meta { font-size: var(--fs-meta); color: var(--tx-md); }
+.micro { font-size: var(--fs-micro); color: var(--tx-lo); }
+.hi { color: var(--tx-hi); }
+.ac { color: var(--ac); }
+.achi { color: var(--ac-hi); }
+.lo { color: var(--tx-lo); }
+.jp { font-family: var(--f-jp); font-size: 10.5px; color: var(--tx-md); letter-spacing: 0; text-transform: none; }
+
+/* engraved rule: 1px dark + 1px highlight below (design.md §4) */
+.rule { height: 2px; border-top: 1px solid var(--bg0); border-bottom: 1px solid var(--hl); }
+.vrule { width: 2px; align-self: stretch; border-left: 1px solid var(--bg0); border-right: 1px solid var(--hl); }
+
+/* chamfer: TL + BR cut at 45° */
+.cham { --c: 10px; clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+
+/* hairline metal surfaces */
+.metal-bg1 { background: var(--bg1) url("/tex/metal-bg1.png"); }
+.metal-bg2 { background: var(--bg2) url("/tex/metal-bg2.png"); }
+.metal-bg3 { background: var(--bg3) url("/tex/metal-bg3.png"); }
+.metal-bg4 { background: var(--bg4) url("/tex/metal-bg4.png"); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

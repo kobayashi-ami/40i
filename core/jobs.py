@@ -238,6 +238,29 @@ def reconcile(session: Session, r: redis.Redis) -> int:
 # --- snapshot for the UI ----------------------------------------------------------------------------------
 
 
+def job_labels(j: Job, sample: Sample | None, preset: Preset | None) -> dict:
+    """What the UI shows for a job besides its state: names, tune, output file."""
+    def st(params) -> int | None:
+        t = (params or {}).get("tune")
+        return t.get("st") if isinstance(t, dict) else t if isinstance(t, int) else None
+
+    tune = st(j.overrides)
+    if tune is None and preset is not None:
+        tune = st(preset.params)
+    return {
+        "sample_id": str(j.sample_id),
+        "sample_name": sample.original_name if sample else None,
+        "preset_id": str(j.preset_id),
+        "preset_name": preset.name if preset else None,
+        "preset_version": preset.version if preset else None,
+        "path": preset.path if preset else None,
+        "tune": tune,
+        "overrides": j.overrides,
+        "output_name": j.output_path.rsplit("/", 1)[-1] if j.output_path else None,
+        "result_sha256": j.result_sha256,
+    }
+
+
 def snapshot(session: Session, r: redis.Redis | None, limit: int = 30, log_limit: int = 50) -> dict:
     s = get_settings()
     fresh = now() - timedelta(seconds=s.heartbeat_ttl_s)
@@ -245,6 +268,12 @@ def snapshot(session: Session, r: redis.Redis | None, limit: int = 30, log_limit
     jobs = session.scalars(select(Job).order_by(Job.created_at.desc()).limit(limit)).all()
     events = session.scalars(select(JobEvent).order_by(JobEvent.id.desc()).limit(log_limit)).all()
     counts = dict(session.execute(select(Job.state, func.count()).group_by(Job.state)).all())
+    day = now() - timedelta(hours=24)
+    counts_24h = dict(
+        session.execute(select(Job.state, func.count()).where(Job.finished_at >= day).group_by(Job.state)).all()
+    )
+    samples = {x.id: x for x in session.scalars(select(Sample).where(Sample.id.in_({j.sample_id for j in jobs})))}
+    presets = {x.id: x for x in session.scalars(select(Preset).where(Preset.id.in_({j.preset_id for j in jobs})))}
 
     live: dict[str, dict] = {}
     if r is not None:
@@ -285,11 +314,13 @@ def snapshot(session: Session, r: redis.Redis | None, limit: int = 30, log_limit
             "error": j.error,
             "created_by": j.created_by,
             "stages": stages,
+            **job_labels(j, samples.get(j.sample_id), presets.get(j.preset_id)),
         }
 
     return {
         "queue": counts.get("queued", 0),
         "counts": counts,
+        "counts_24h": counts_24h,
         "workers": [
             {
                 "id": w.id,

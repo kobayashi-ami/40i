@@ -1,0 +1,60 @@
+/* design.md §2–§4. Single dark theme by design (color-scheme: dark). */
+@font-face { font-family: "Saira Stencil One"; src: url("/fonts/SairaStencilOne-Regular.ttf") format("truetype"); font-display: block; }
+@font-face { font-family: "Barlow Condensed"; font-weight: 600; src: url("/fonts/BarlowCondensed-SemiBold.ttf") format("truetype"); font-display: block; }
+@font-face { font-family: "Barlow Condensed"; font-weight: 500; src: url("/fonts/BarlowCondensed-Medium.ttf") format("truetype"); font-display: block; }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 400; src: url("/fonts/IBMPlexMono-Regular.ttf") format("truetype"); font-display: block; }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 500; src: url("/fonts/IBMPlexMono-Medium.ttf") format("truetype"); font-display: block; }
+
+:root {
+  color-scheme: dark;
+  --bg0: #08090b;
+  --bg1: #0e1114;
+  --bg2: #14181c;
+  --bg3: #1b2025;
+  --bg4: #242a30;
+  --line: #2a3137;
+  --line2: #394149;
+  --hl: #2c333a;
+  --metal: #4c555f;
+  --metal-hi: #6b7580;
+  --tx-hi: #c5ccd3;
+  --tx-md: #88919b;
+  --tx-lo: #58616b;
+  --tx-xlo: #394149;
+  --ac: #6c97be;
+  --ac-hi: #a8c8e4;
+  --ac-md: #3e5f7e;
+  --ac-lo: #1d3044;
+  --ac-xlo: #111b25;
+  --seg-off: #131b22;
+  --fail: #e6ebf0;
+  --fail-bg: #23282d;
+  --lcd: #070b0f;
+  --lcd-edge: #1a232c;
+
+  --f-stencil: "Saira Stencil One", Impact, sans-serif;
+  --f-cond: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --f-jp: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+
+  --fs-logo: 25px;
+  --fs-title: 22px;
+  --fs-path: 17px;
+  --fs-stage: 15px;
+  --fs-panel: 14px;
+  --fs-btn: 13px;
+  --fs-value: 12.5px;
+  --fs-label: 11px;
+  --fs-meta: 10.5px;
+  --fs-micro: 9.5px;
+
+  --topbar: 52px;
+  --rail: 88px;
+  --strip: 28px;
+  --gap: 16px;
+
+  --glow: 0 0 6px rgba(108, 151, 190, 0.45);
+  --hatch-fail: repeating-linear-gradient(135deg, #30363c 0 2px, transparent 2px 6px);
+  --hatch-dim: repeating-linear-gradient(135deg, #101316 0 1.4px, transparent 1.4px 5px);
+  --hatch-run: repeating-linear-gradient(135deg, var(--ac-lo) 0 3px, transparent 3px 8px);
+}
