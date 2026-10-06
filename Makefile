@@ -1,11 +1,19 @@
 UV ?= uv
+PNPM ?= pnpm
 WORKERS ?= 2
 
-.PHONY: setup infra infra-down migrate dev up down status serve unserve test test-engine lint mockups mockups-hires
+.PHONY: setup web web-dev infra infra-down migrate dev up down status serve unserve test test-engine lint mockups mockups-hires
 
-setup:            ## install Python deps and create .env
+setup:            ## install Python deps, create .env, build the UI
 	$(UV) sync
 	@test -f .env || cp .env.example .env
+	$(MAKE) web
+
+web:              ## build the UI into web/dist (served by the API on the same origin)
+	cd web && $(PNPM) install --frozen-lockfile && $(PNPM) build
+
+web-dev:          ## Vite dev server on 127.0.0.1:5173 (proxies /api to :8260; run `make dev` alongside)
+	cd web && $(PNPM) dev
 
 infra:            ## Postgres + Redis in OrbStack
 	docker compose up -d --wait
@@ -42,6 +50,7 @@ test-engine:      ## DSP engine tests only (no database)
 
 lint:
 	$(UV) run ruff check . && $(UV) run ruff format --check .
+	cd web && $(PNPM) typecheck
 
 mockups:
 	$(UV) run --group design python design/render_mockups.py

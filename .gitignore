@@ -20,3 +20,8 @@ design/mockups/*@2x.png
 
 .DS_Store
 .env
+
+# web build
+web/dist/
+web/node_modules/
+web/*.tsbuildinfo

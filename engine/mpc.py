@@ -8,7 +8,7 @@ import numpy as np
 from scipy import signal
 
 from engine import MPC_NATIVE_SR
-from engine.dsp import db, rbj_biquad, resample_exact
+from engine.dsp import rbj_biquad, resample_exact
 
 FS = float(MPC_NATIVE_SR)
 
@@ -96,19 +96,6 @@ def tune(x: np.ndarray, st: float, interp: str = "none") -> np.ndarray:
 
 
 def render(x: np.ndarray, sr: float, p: dict) -> tuple[np.ndarray, float, dict]:
-    i = p["input"]
-    y = x * db(i["gain_db"])
-    y = to_native(y, sr, p["resample"]["band_hz"])
-    if i["emph"]:
-        y = emphasis(y, i["emph_db"], i["emph_fc"])
-    s16 = q16(y)
-    c = codec(s16, p["codec"]["curve"], int(p["codec"]["block"]))
-    info = {"codec_levels_used": int(len(np.unique(c)))}
-    v = tune(c.astype(np.float64), p["tune"]["st"], p["tune"]["interp"]) / 32768.0
-    if i["emph"]:
-        v = emphasis(v, i["emph_db"], i["emph_fc"], inverse=True)
-    v = q16(v) / 32768.0  # 16-bit DAC
-    rate = p["output"]["rate"]
-    if rate == "native":
-        return v, FS, info
-    return resample_exact(v, MPC_NATIVE_SR, int(rate)), float(rate), info
+    from engine.pipeline import run
+
+    return run("mpc", p, x, sr)

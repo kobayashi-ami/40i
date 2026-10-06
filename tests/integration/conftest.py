@@ -9,6 +9,7 @@ import signal
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from pathlib import Path
@@ -30,6 +31,7 @@ BASE_ENV = {
     "HEARTBEAT_S": "0.5",
     "HEARTBEAT_TTL_S": "2",
     "MAX_ATTEMPTS": "3",
+    "DATA_DIR": tempfile.mkdtemp(prefix="t1260-data-"),
 }
 os.environ.update(BASE_ENV)
 

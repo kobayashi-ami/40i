@@ -21,7 +21,7 @@ SP-1200 でサンプリング（キックは low、スネアは Hi を EQ で強
 
 各フェーズの終わりに「何をしたか／何が未確定か／次に何をするか」を短く報告する。
 
-**現在地：Phase 2（DSP エンジン）実装済み・報告待ち。Phase 1 は Mac 上での確認（OrbStack・launchd・tailscale serve・iPhone 表示）待ち。Phase 0 は完了（2026-10-06 承認）。**
+**現在地：Phase 3（UI）実装済み・報告待ち。design.md §12 の「Phase 3 実装での差分」は承認待ち。Phase 2 は完了。Phase 1 は Mac 上での確認（OrbStack・launchd・tailscale serve・iPhone 表示）待ち。Phase 0 は完了（2026-10-06 承認）。**
 
 ---
 
@@ -66,9 +66,9 @@ pyproject.toml            uv 管理（dev / design グループ）
 Makefile                  setup / infra / migrate / dev / up / serve / test
 compose.yaml              Postgres 16 + Redis 7（OrbStack、127.0.0.1 のみ）
 alembic.ini, migrations/  Alembic（0001 initial schema）
-core/                     settings, db, models（正本スキーマ）, bus（Redis）, jobs（ライフサイクル・reaper・reconcile・snapshot）
-api/                      FastAPI（REST + SSE）, smoke.html（Phase 1 の確認ページ。Phase 3 で本 UI に置き換え）
-worker/                   python -m worker（今はダミーステージ。エンジンへの接続はサンプル取り込み API と一緒に行う）
+core/                     settings, db, models（正本スキーマ）, bus（Redis）, jobs（ライフサイクル・reaper・reconcile・snapshot）, library（取り込み・sha 重複排除・プリセット同期）
+api/                      FastAPI（REST + SSE）, library（サンプル取り込み・プリセット・レンダージョブ・ファイル配信）, web/dist を同一オリジンで配信。smoke.html は /smoke に残す
+worker/                   python -m worker（エンジンのステージをジョブのステージとして実行。overrides に dummy があればダミー）
 engine/                   DSP：params（VER/HYP 表・プリセット）, sp, mpc, render（WAV/PNG/JSON）, python -m engine
 scripts/                  dev.sh, launchd.sh, tailscale_serve.sh
 deploy/launchd/           LaunchAgent テンプレート
@@ -81,8 +81,7 @@ design/
 docs/
   research.md             音響的事実と未確定事項（VERIFIED / HYPOTHESIS）
   runbook.md              Mac での起動・常駐・tailnet 公開・障害時の振る舞い
-# Phase 3 で追加予定
-web/
+web/                      React + TS + Vite（pnpm）。src/styles（トークン）, components（部品）, screens（デスクトップ 4 画面＋部品一覧 /parts）, mobile（iPhone 4 タブ）
 ```
 
 ## コマンド
@@ -97,6 +96,8 @@ uv run python -m engine params    # 全パラメータと VER/HYP
 make up / make down       # launchd 常駐
 make serve / unserve      # tailscale serve（tailnet 内のみ、funnel は使わない）
 make lint
+make web                  # UI を web/dist にビルド（setup に含まれる）
+make web-dev              # Vite 開発サーバ 127.0.0.1:5173（/api は :8260 へ中継）
 make mockups              # design/mockups/*.png を再生成
 ```
 

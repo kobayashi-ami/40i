@@ -14,19 +14,23 @@ from pathlib import Path
 import redis
 import redis.asyncio as aioredis
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from starlette.concurrency import run_in_threadpool
 
+from api.library import router as library_router
 from core import VERSION, bus
 from core import jobs as J
+from core import library as L
 from core.db import get_engine, session_scope
 from core.models import Job, Preset
 from core.settings import get_settings
 
 log = logging.getLogger("api")
 SMOKE_HTML = (Path(__file__).parent / "smoke.html").read_text(encoding="utf-8")
+WEB_DIST = Path(__file__).resolve().parents[1] / "web" / "dist"
 
 
 async def maintenance_loop(stop: asyncio.Event) -> None:
@@ -53,6 +57,11 @@ async def maintenance_loop(stop: asyncio.Event) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    try:
+        with session_scope() as s:
+            L.sync_presets(s)
+    except Exception:
+        log.exception("could not sync built-in presets (database down?)")
     stop = asyncio.Event()
     task = asyncio.create_task(maintenance_loop(stop))
     yield
@@ -61,6 +70,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="1260", version=VERSION, lifespan=lifespan)
+app.include_router(library_router)
 
 
 def tailnet_user(request: Request) -> str | None:
@@ -242,12 +252,25 @@ async def snapshot():
 # --- pages ------------------------------------------------------------------------------------------------
 
 
-@app.get("/", include_in_schema=False)
-def root():
-    return RedirectResponse("/smoke")
-
-
 @app.get("/smoke", response_class=HTMLResponse, include_in_schema=False)
 def smoke():
-    """Phase 1 diagnostic page (health, workers, queue, stage progress, log). Replaced by the real UI in Phase 3."""
+    """Phase 1 diagnostic page (health, workers, queue, stage progress, log)."""
     return SMOKE_HTML
+
+
+if (WEB_DIST / "assets").is_dir():
+    app.mount("/assets", StaticFiles(directory=WEB_DIST / "assets"), name="assets")
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+def spa(full_path: str):
+    """The built UI (web/dist) on the same origin as the API; client-side routes fall back to index.html."""
+    if full_path.startswith("api/"):
+        raise HTTPException(404, "not found")
+    index = WEB_DIST / "index.html"
+    if not index.exists():
+        return RedirectResponse("/smoke")
+    candidate = (WEB_DIST / full_path).resolve()
+    if full_path and candidate.is_file() and WEB_DIST in candidate.parents:
+        return FileResponse(candidate)
+    return FileResponse(index, headers={"Cache-Control": "no-cache"})

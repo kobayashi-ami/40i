@@ -270,21 +270,6 @@ def output(x: np.ndarray, native_sr, rate, src: str = "keep_zoh") -> tuple[np.nd
 
 def render(x: np.ndarray, sr: float, p: dict) -> tuple[np.ndarray, float, dict]:
     """Run the full drum path. Returns (audio, export_rate, info)."""
-    info: dict = {}
-    y = pre_eq(x, sr, **p["pre_eq"])
-    y = drive(y, **p["drive"])
-    y = capture(y, sr, **p["capture"])
-    a = p["adc"]
-    codes = adc(y, sr, a["native_sr"], a["aa"], a["aa_fc"], a["bits"], a["dither"], a["seed"])
-    info["adc_levels_used"] = int(len(np.unique(codes)))
-    full = 2 ** (a["bits"] - 1)
-    info["adc_clipped"] = int(np.sum((codes == full - 1) | (codes == -full)))
-    info["native_sr"] = float(as_fraction(a["native_sr"]))
-    codes = tune(codes, p["tune"]["st"], p["tune"]["table"])
-    info["tune_ratio"] = tune_ratio(p["tune"]["st"], p["tune"]["table"])
-    lvl = vol_env(codes, a["native_sr"], **p["vol_env"])
-    v = dac(lvl, a["bits"], p["dac"]["hold"])
-    fs_hi = float(as_fraction(a["native_sr"]) * OVERSAMPLE)
-    v = analog(v, fs_hi, **p["analog"])
-    out, rate = output(v, a["native_sr"], p["output"]["rate"], p["output"]["src"])
-    return out, rate, info
+    from engine.pipeline import run  # the stage list lives there so workers can run it step by step
+
+    return run("sp", p, x, sr)

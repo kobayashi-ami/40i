@@ -6,19 +6,24 @@
 |---|---|
 | OrbStack | https://orbstack.dev からインストールし、設定の **Start at login** をオン |
 | uv | `brew install uv` |
+| Node と pnpm（画面のビルド用） | `brew install node pnpm` |
 | Tailscale | Mac App Store 版か公式サイト版。設定の **CLI integration** で `tailscale` コマンドを入れる |
 | iPhone の Tailscale | 同じ tailnet にログイン |
 
 ## 1. はじめて動かす
 
 ```sh
-make setup        # 依存関係のインストールと .env の作成
+make setup        # 依存関係のインストール、.env の作成、画面のビルド（make web）
 make infra        # OrbStack で Postgres と Redis を起動（127.0.0.1 だけで待ち受け）
 make migrate      # テーブルを作る
 make dev          # API とワーカー 2 台を前面で起動。Ctrl-C で全部止まる
 ```
 
-ブラウザで http://127.0.0.1:8260/ を開くと、Phase 1 の確認ページ（`/smoke`）が出ます。**DUMMY JOB** を押すと 10 段のダミーステージが流れ、進捗バーが SSE で動きます。
+ブラウザで http://127.0.0.1:8260/ を開くと LIBRARY が出ます。WAV をドロップ → `SEND TO CHAIN` → `RENDER` → `→ A/B` で試聴、の順です。書き出しは `data/renders/<ジョブ>/` に WAV・スペクトログラム PNG・パラメータ JSON の 3 つで残ります。
+
+- 画面のコードを変えたら `make web` で作り直します（API は `web/dist` をそのまま配ります）。画面をいじりながら見るときは `make web-dev`（http://127.0.0.1:5173/、API へは自動で中継）。
+- Phase 1 の確認ページは `/smoke` に残してあります。**DUMMY JOB** で 10 段のダミーステージが流れます。
+- 幅 900px 未満（iPhone）では JOBS / LISTEN / WORKERS / LOG の 4 タブになります。LISTEN の A/B は再生位置を保ったまま切り替わります。iOS は最初の再生にタップが要ります。
 
 ## 2. iPhone から見る（tailnet の中だけに公開）
 
