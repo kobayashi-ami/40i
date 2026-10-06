@@ -240,6 +240,7 @@ def reconcile(session: Session, r: redis.Redis) -> int:
 
 def job_labels(j: Job, sample: Sample | None, preset: Preset | None) -> dict:
     """What the UI shows for a job besides its state: names, tune, output file."""
+
     def st(params) -> int | None:
         t = (params or {}).get("tune")
         return t.get("st") if isinstance(t, dict) else t if isinstance(t, int) else None

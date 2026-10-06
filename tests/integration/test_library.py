@@ -32,6 +32,9 @@ def test_upload_render_and_serve(procs):
     assert bad.status_code == 415
 
     assert httpx.patch(f"{url}/api/samples/{loop['id']}", json={"route": "sp"}).json()["route"] == "sp"
+    hdr = httpx.get(f"{url}/api/samples/{snare['id']}/info").json()
+    assert hdr["channels"] in (1, 2) and hdr["bytes"] > 0
+    assert httpx.get(url + "/api/store").json()["bytes"] > 0
     peaks = httpx.get(f"{url}/api/samples/{snare['id']}/peaks?n=64").json()
     assert len(peaks) == 64 and all(lo <= hi for lo, hi in peaks)
 

@@ -13,5 +13,6 @@ uv run uvicorn api.main:app --host "${API_HOST:-127.0.0.1}" --port "${API_PORT:-
 for _ in $(seq "${WORKERS:-1}"); do
   uv run python -m worker &
 done
+test -f web/dist/index.html || echo "web/dist is missing: run \`make web\` (the API falls back to /smoke until then)"
 echo "1260 dev: http://127.0.0.1:${API_PORT:-8260}/  (Ctrl-C stops everything)"
 wait

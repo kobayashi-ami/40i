@@ -8,7 +8,8 @@ const cache = new Map<string, Promise<AudioBuffer>>();
 export function audioContext(): AudioContext {
   if (!ctx) {
     const AC = window.AudioContext || (window as any).webkitAudioContext;
-    ctx = new AC();
+    // 48 kHz = the default export rate, so the render is auditioned without browser resampling
+    ctx = new AC({ sampleRate: 48000 });
     try {
       // iOS: play even with the ring/silent switch on (Safari 17+)
       (navigator as any).audioSession && ((navigator as any).audioSession.type = "playback");

@@ -1,0 +1,65 @@
+/* design.md §6.5 / §6.6 — 390 wide must not break. Header 56, tab bar 78 incl. safe area. */
+.m { min-height: 100%; display: flex; flex-direction: column; background: var(--bg0) url("/tex/metal-bg0.png"); }
+.m-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 12px; height: calc(56px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 16px 0; background: var(--bg2) url("/tex/metal-bg2.png"); box-shadow: inset 0 -1px 0 var(--bg0), 0 1px 0 var(--hl); }
+.m-logo { font: 400 22px / 1 var(--f-stencil); color: var(--tx-hi); border-bottom: 1px solid var(--ac-md); padding-bottom: 3px; }
+.m-title { font: 600 17px / 1 var(--f-cond); letter-spacing: 0.18em; padding-left: 12px; border-left: 1px solid var(--bg0); box-shadow: -1px 0 0 var(--hl); }
+.m-net { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 10.5px; }
+.m-main { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 14px 16px calc(78px + env(safe-area-inset-bottom) + 16px); }
+
+.m-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; display: grid; grid-template-columns: repeat(4, 1fr); height: calc(78px - 34px + env(safe-area-inset-bottom, 34px)); min-height: 60px; padding-bottom: env(safe-area-inset-bottom); background: var(--bg1) url("/tex/metal-bg1.png"); border-top: 1px solid var(--bg0); box-shadow: inset 0 1px 0 var(--hl); }
+.m-tabs a { display: grid; place-items: center; align-content: center; gap: 6px; font: 600 13px / 1 var(--f-cond); letter-spacing: 0.15em; color: var(--tx-md); }
+.m-tabs a[aria-current="page"] { color: var(--ac-hi); box-shadow: inset 0 2px 0 var(--ac); }
+
+.m-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.m-kpi { display: grid; gap: 6px; padding: 8px 8px 8px; background: var(--lcd); border: 1px solid var(--lcd-edge); box-shadow: 0 0 0 1px var(--bg0); }
+.m-kpi .label { font-size: 10px; }
+.m-kpi-v { display: flex; align-items: flex-end; justify-content: flex-end; gap: 3px; }
+.m-kpi.bad { background: var(--lcd) repeating-linear-gradient(135deg, #161a1e 0 1px, transparent 1px 6px); }
+.m-kpi.bad .label { color: var(--fail); }
+
+.m-card { --c: 8px; display: grid; gap: 8px; padding: 12px 12px 10px 14px; background: var(--bg2) url("/tex/metal-bg2.png"); border: 1px solid var(--bg0); box-shadow: inset 3px 0 0 var(--ac-md), inset 0 1px 0 var(--line2); clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+.m-card.fail { box-shadow: inset 3px 0 0 var(--fail), inset 0 1px 0 var(--line2); }
+.m-card-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.m-name { flex: 1; min-width: 0; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m-card-sub { display: flex; justify-content: space-between; gap: 8px; margin-top: -4px; }
+.m-card-sub .meta:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m-card-stage { display: flex; align-items: baseline; justify-content: space-between; font: 600 21px / 1 var(--f-cond); letter-spacing: 0.1em; color: var(--ac-hi); }
+.m-card.fail .m-card-stage { color: var(--fail); }
+.m-card-stage .mono { font: 400 13px var(--f-mono); letter-spacing: 0; color: var(--tx-hi); }
+.m-card .sprog i { height: 12px; }
+.m-ticks { position: relative; height: 10px; margin-top: -4px; }
+.m-ticks span { position: absolute; transform: translateX(-50%); font-size: 8px; }
+.m-trace { margin: 0; padding: 8px 10px; background: var(--lcd); border: 1px solid var(--lcd-edge); font: 400 9.5px / 1.5 var(--f-mono); color: var(--tx-md); white-space: pre-wrap; word-break: break-word; max-height: 240px; overflow: auto; }
+
+.m-sect { display: grid; gap: 6px; margin-top: 4px; }
+.m-q { display: grid; grid-template-columns: 40px 1fr auto; gap: 8px; align-items: center; height: 26px; font-size: 11.5px; }
+.m-q .hi { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.m-file { display: flex; justify-content: space-between; gap: 12px; }
+.m-file > div:first-child { min-width: 0; }
+.m-file .mono { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m-ab { height: 64px; }
+.m-ab > button .stencil { font-size: 26px; }
+.m-play { display: grid; grid-template-columns: 72px 1fr; gap: 12px; }
+.m-pbtn { --c: 7px; width: 72px; height: 72px; display: grid; place-items: center; border: 0; background: var(--ac-lo); box-shadow: inset 0 0 0 1px var(--ac), inset 0 2px 0 var(--ac-md); color: var(--ac-hi); clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+.m-pbtn svg { width: 30px; height: 30px; }
+.m-pbtn:disabled { background: var(--bg2); color: var(--tx-xlo); box-shadow: inset 0 0 0 1px var(--line); }
+.m-tune { display: grid; gap: 8px; align-content: space-between; min-width: 0; }
+.m-tune-lcd { height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 10px; }
+.m-tune-row { display: grid; grid-template-columns: 80px 1fr; gap: 8px; }
+
+.m-render { display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 10px; border: 0; border-bottom: 1px solid #13171b; background: transparent; text-align: left; color: inherit; }
+.m-render.sel { background: var(--ac-xlo); box-shadow: inset 2px 0 0 var(--ac); }
+.m-ricon { width: 24px; height: 24px; display: grid; place-items: center; background: var(--bg3); box-shadow: inset 0 0 0 1px var(--line2); color: var(--tx-hi); flex: none; }
+.m-render.sel .m-ricon { color: var(--ac-hi); box-shadow: inset 0 0 0 1px var(--ac); }
+
+.m-log { display: grid; font: 400 10.5px / 1.5 var(--f-mono); }
+.m-log > div { display: grid; grid-template-columns: auto auto 1fr; gap: 2px 8px; padding: 6px 4px; border-bottom: 1px solid #13171b; }
+.m-log .t { color: var(--tx-lo); }
+.m-log .lv { color: var(--tx-lo); font-weight: 500; }
+.m-log .src { color: var(--tx-md); }
+.m-log .src.job { color: var(--ac); }
+.m-log .msg { grid-column: 1 / -1; color: var(--tx-md); word-break: break-word; }
+.m-log .WARN .msg { color: var(--tx-hi); }
+.m-log .ERR { background: var(--fail-bg); }
+.m-log .ERR .lv, .m-log .ERR .msg { color: var(--fail); }

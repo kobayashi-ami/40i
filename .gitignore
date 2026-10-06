@@ -24,3 +24,4 @@ design/mockups/*@2x.png
 # web build
 web/dist/
 web/node_modules/
+web/*.tsbuildinfo

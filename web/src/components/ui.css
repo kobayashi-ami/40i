@@ -1,0 +1,127 @@
+/* design.md §5 — components and their states */
+
+/* 5.1 Panel: chamfer 10, metal, bevel, screws TR+BL, title + engraved rule */
+.panel { position: relative; background: var(--bg0); padding: 1px; --c: 10px; min-width: 0; }
+.panel > .panel-in { position: relative; height: 100%; box-shadow: inset 0 1px 0 var(--line2), inset 1px 0 0 var(--line); display: flex; flex-direction: column; min-height: 0; }
+.panel, .panel > .panel-in { clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+.panel-head { display: flex; align-items: baseline; gap: 8px; padding: 13px 16px 9px 20px; }
+.panel-head .idx { font: 400 10px var(--f-mono); color: var(--tx-lo); }
+.panel-head .ttl { font: 600 var(--fs-panel) / 1 var(--f-cond); letter-spacing: 0.19em; text-transform: uppercase; color: var(--tx-md); text-shadow: 0 1px 0 var(--hl); }
+.panel-head .aside { margin-left: auto; }
+.panel-rule { margin: 0 12px; }
+.panel-body { padding: 12px 16px 16px; min-height: 0; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.screw { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #59626c, #3f4750 60%); box-shadow: 0 0 0 1px var(--bg0); }
+.screw::before, .screw::after { content: ""; position: absolute; left: 50%; top: 50%; width: 5px; height: 1px; background: var(--bg0); transform: translate(-50%, -50%) rotate(var(--a, 20deg)); }
+.screw::after { transform: translate(-50%, -50%) rotate(calc(var(--a, 20deg) + 90deg)); }
+.screw.tr { top: 6px; right: 6px; }
+.screw.bl { bottom: 6px; left: 6px; }
+
+/* 5.11 LCD window */
+.lcd { background: var(--lcd); border: 1px solid var(--lcd-edge); box-shadow: 0 0 0 1px var(--bg0), inset 0 1px 0 #03050a; position: relative; overflow: hidden; }
+
+/* 5.8 LED */
+.led { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #192027; box-shadow: 0 0 0 1px var(--bg0); vertical-align: middle; flex: none; }
+.led.on { background: radial-gradient(circle at 40% 35%, #e2eef8 0 18%, var(--ac-hi) 30%); box-shadow: 0 0 0 1px var(--bg0), var(--glow); }
+.led.sm { width: 5px; height: 5px; }
+
+/* 5.9 Tags */
+.tag { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 11px; font: 500 7.5px / 1 var(--f-mono); flex: none; }
+.tag.VER { background: var(--ac-xlo); border: 1px solid var(--ac-md); color: var(--ac); }
+.tag.HYP { background: var(--bg1) repeating-linear-gradient(135deg, #20262c 0 1px, transparent 1px 3px); border: 1px solid var(--tx-lo); color: var(--tx-md); }
+
+/* 5.4 Buttons */
+.btn { --c: 6px; position: relative; border: 0; padding: 0; background: var(--bg0); clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+.btn > span { display: flex; align-items: center; justify-content: center; height: 100%; margin: 1px; padding: 0 12px; background: var(--bg3); box-shadow: inset 0 0 0 1px var(--line2), inset 0 2px 0 var(--bg4); font: 600 var(--fs-btn) / 1 var(--f-cond); letter-spacing: 0.15em; text-transform: uppercase; color: var(--tx-hi); clip-path: inherit; white-space: nowrap; }
+.btn:hover > span { background: var(--bg4); box-shadow: inset 0 0 0 1px var(--ac-md); }
+.btn:active > span { background: var(--bg2); }
+.btn.primary > span { background: var(--ac-lo); box-shadow: inset 0 0 0 1px var(--ac), inset 0 2px 0 var(--ac-md); color: var(--ac-hi); }
+.btn.primary:hover > span { background: #24394f; }
+.btn.running > span { background: var(--ac-xlo) var(--hatch-run); background-size: 11.3px 11.3px; box-shadow: inset 0 0 0 1px var(--ac-md); color: var(--ac); animation: slide 1.2s linear infinite; }
+.btn.failed > span { background: var(--fail-bg) var(--hatch-fail); box-shadow: inset 0 0 0 1px var(--fail); color: var(--fail); }
+.btn:disabled { cursor: default; }
+.btn:disabled > span { background: var(--bg2); box-shadow: inset 0 0 0 1px var(--line); color: var(--tx-xlo); }
+@keyframes slide { to { background-position: 11.3px 0; } }
+
+/* 5.5 Segmented */
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 1px; background: var(--bg0); border: 1px solid var(--bg0); }
+.seg > button { border: 0; background: var(--bg1); box-shadow: inset 0 1px 0 var(--bg3); color: var(--tx-md); font: 600 12px / 1 var(--f-cond); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 4px; min-width: 0; white-space: nowrap; overflow: hidden; }
+.seg.mono > button { font: 500 11px / 1 var(--f-mono); letter-spacing: 0; text-transform: none; }
+.seg > button:hover { color: var(--tx-hi); background: var(--bg3); }
+.seg > button[aria-pressed="true"] { background: var(--ac-lo); box-shadow: inset 0 2px 0 var(--ac); color: var(--ac-hi); }
+.seg.dim > button { color: var(--tx-lo); }
+
+/* field = label row + control */
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field-head { display: flex; align-items: center; gap: 5px; min-height: 11px; }
+.field-head .val { margin-left: auto; font: 400 11.5px / 1 var(--f-mono); color: var(--tx-hi); }
+.field.dim .label, .field.dim .val { color: var(--tx-lo); }
+
+/* 5.6 Slider */
+.slider { position: relative; height: 22px; touch-action: none; cursor: ew-resize; outline: none; }
+.slider .track { position: absolute; left: 0; right: 0; top: 4px; height: 5px; background: var(--bg0); box-shadow: 0 0 0 1px #05070a; }
+.slider .fill { position: absolute; top: 5px; height: 3px; background: var(--ac-md); }
+.slider .ticks { position: absolute; left: 2px; right: 2px; top: 12px; height: 4px; background: linear-gradient(90deg, var(--tx-xlo) 1px, transparent 1px) 0 0 / calc(12.5% - 0.125px) 100%; }
+.slider .ticks::after { content: ""; position: absolute; inset: 0 0 -2px; background: linear-gradient(90deg, var(--tx-xlo) 1px, transparent 1px) 0 0 / calc(50% - 0.5px) 100%; }
+.slider .thumb { position: absolute; top: -1px; width: 9px; height: 15px; margin-left: -4.5px; background: var(--metal); box-shadow: 0 0 0 1px var(--bg0), inset 0 1px 0 var(--metal-hi); }
+.slider .thumb::after { content: ""; position: absolute; left: 4px; top: 2px; bottom: 2px; width: 1px; background: var(--bg0); }
+.slider:focus-visible .thumb { box-shadow: 0 0 0 2px var(--ac-hi); }
+.slider.dim .fill { background: var(--ac-lo); }
+.slider.dim .thumb { background: var(--tx-lo); box-shadow: 0 0 0 1px var(--bg0); }
+
+/* 5.7 Toggle (rocker) */
+.toggle { position: relative; width: 24px; height: 14px; border: 0; padding: 0; background: var(--bg0); flex: none; }
+.toggle i { position: absolute; top: 1px; width: 11px; height: 12px; }
+.toggle .cap { left: 1px; background: #383f47; }
+.toggle .bar { right: 3px; top: 6px; width: 7px; height: 2px; background: var(--tx-xlo); }
+.toggle[aria-pressed="true"] .cap { left: 12px; background: var(--metal); box-shadow: inset 0 1px 0 var(--metal-hi); }
+.toggle[aria-pressed="true"] .bar { left: 3px; right: auto; background: var(--ac); }
+
+/* 5.12 State chip */
+.chip { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 16px; font: 500 9px / 1 var(--f-mono); border: 1px solid var(--line2); color: var(--tx-md); flex: none; }
+.chip.RUN { background: var(--ac-lo); border-color: var(--ac); color: var(--ac-hi); }
+.chip.OK { border-color: var(--ac-md); color: var(--ac); }
+.chip.FAIL, .chip.LOST { background: var(--fail-bg) repeating-linear-gradient(135deg, #3a4046 0 1px, transparent 1px 4px); border-color: var(--fail); color: var(--fail); }
+.chip.CXL { color: var(--tx-lo); }
+
+/* 5.13 Stage progress */
+.sprog { display: flex; gap: 2px; }
+.sprog i { flex: 1; height: 9px; background: var(--bg0); box-shadow: inset 0 0 0 1px #1c2228; position: relative; overflow: hidden; }
+.sprog i.done { background: var(--ac); box-shadow: none; }
+.sprog.dim i.done { background: var(--ac-md); }
+.sprog i.fail { background: var(--fail-bg) repeating-linear-gradient(135deg, var(--fail) 0 1px, transparent 1px 4px); box-shadow: inset 0 0 0 1px var(--fail); }
+.sprog i > b { position: absolute; inset: 0 auto 0 0; background: var(--ac-hi); box-shadow: var(--glow); transition: width 0.15s linear; }
+
+/* 5.17 A/B rocker */
+.ab { display: grid; grid-template-columns: 1fr 1fr; gap: 0; background: var(--bg0); border: 1px solid var(--bg0); }
+.ab > button { border: 0; background: var(--bg1); color: var(--tx-lo); display: grid; place-items: center; align-content: center; gap: 2px; padding: 4px 0; box-shadow: inset 0 3px 0 transparent; }
+.ab > button .stencil { font-size: 22px; line-height: 1; }
+.ab > button[aria-pressed="true"] { background: var(--bg4) url("/tex/metal-bg4.png"); box-shadow: inset 0 3px 0 var(--ac); color: var(--ac-hi); }
+
+/* tables (5.14) */
+.tbl { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.tbl th { text-align: left; font: 500 10.5px / 1 var(--f-cond); letter-spacing: 0.17em; text-transform: uppercase; color: var(--tx-lo); padding: 0 6px 8px; border-bottom: 1px solid var(--bg0); box-shadow: 0 1px 0 var(--hl); }
+.tbl td { padding: 0 6px; border-bottom: 1px solid #13171b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tbl tbody tr { cursor: pointer; }
+.tbl tbody tr:hover { background: var(--bg3); }
+.tbl tbody tr.sel { background: var(--ac-xlo); box-shadow: inset 2px 0 0 var(--ac); }
+.tbl tbody tr.sel.bad { background: var(--bg3); box-shadow: inset 2px 0 0 var(--fail); }
+.tbl tbody tr.dim td { color: var(--tx-lo); }
+
+.stamp { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 16px; border: 1px solid currentColor; font: 600 11.5px / 1 var(--f-cond); letter-spacing: 0.08em; }
+
+/* log lines (5.15) */
+.log { font: 400 10.5px / 1.9 var(--f-mono); overflow: auto; min-height: 0; }
+.log div { display: grid; grid-template-columns: 96px 40px 60px 1fr; gap: 0 8px; padding: 0 8px; white-space: nowrap; }
+.log div span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.log .t { color: var(--tx-lo); }
+.log .lv { font-weight: 500; color: var(--tx-lo); }
+.log .src { color: var(--tx-md); }
+.log .src.job { color: var(--ac); }
+.log .msg { color: var(--tx-md); }
+.log .WARN .lv, .log .WARN .msg { color: var(--tx-hi); }
+.log .ERR { background: var(--fail-bg); }
+.log .ERR .lv, .log .ERR .msg { color: var(--fail); }
+
+.err-line { color: var(--fail); background: var(--fail-bg); border: 1px solid var(--fail); padding: 6px 8px; font-size: 10.5px; }
+.empty { color: var(--tx-lo); font-size: 10.5px; padding: 8px 0; }
+.field-head .val { white-space: nowrap; }

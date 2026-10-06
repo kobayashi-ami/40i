@@ -1,0 +1,29 @@
+/* design.md §6 frame: top bar 52 / rail 88 / status strip 28 */
+.frame { display: grid; grid-template-columns: var(--rail) 1fr; grid-template-rows: var(--topbar) 1fr var(--strip); height: 100vh; min-width: 1280px; }
+
+.topbar { grid-column: 1 / -1; display: flex; align-items: center; background: var(--bg2) url("/tex/metal-bg2.png"); box-shadow: inset 0 -1px 0 var(--bg0), 0 1px 0 var(--hl); position: relative; z-index: 1; }
+.logo { width: var(--rail); height: 100%; display: grid; place-items: center; background: var(--bg1); border-right: 1px solid var(--bg0); }
+.logo b { font: 400 var(--fs-logo) / 1 var(--f-stencil); color: var(--tx-hi); text-shadow: 0 1px 0 var(--hl); border-bottom: 1px solid var(--ac-md); padding-bottom: 4px; letter-spacing: 0.02em; }
+.topbar .scr { display: flex; align-items: baseline; gap: 12px; padding-left: 24px; min-width: 0; }
+.topbar .scr .n { font: 400 11px var(--f-mono); color: var(--tx-lo); }
+.topbar .scr .t { font: 600 var(--fs-title) / 1 var(--f-cond); letter-spacing: 0.18em; text-shadow: 0 1px 0 var(--hl); }
+.topbar .scr .ctx { font: 400 11px var(--f-mono); color: var(--tx-lo); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 1px solid var(--bg0); box-shadow: -1px 0 0 var(--hl); padding-left: 14px; }
+.topbar .status { margin-left: auto; display: flex; align-items: center; gap: 14px; padding-right: 20px; }
+.topbar .status .grp { display: flex; align-items: center; gap: 6px; }
+.topbar .status .sep { width: 2px; height: 24px; border-left: 1px solid var(--bg0); border-right: 1px solid var(--hl); }
+
+.rail { background: var(--bg1) url("/tex/metal-bg1.png"); border-right: 1px solid var(--bg0); box-shadow: inset -1px 0 0 var(--hl); display: flex; flex-direction: column; align-items: center; padding-top: 18px; gap: 12px; }
+.rail a { width: 100%; height: 62px; display: grid; place-items: center; align-content: center; gap: 6px; position: relative; }
+.rail a .n { font: 400 10px var(--f-mono); color: var(--tx-lo); }
+.rail a .l { font: 600 15px / 1 var(--f-cond); letter-spacing: 0.15em; color: var(--tx-md); }
+.rail a:hover .l { color: var(--tx-hi); }
+.rail a[aria-current="page"] { background: var(--ac-xlo); box-shadow: inset 3px 0 0 var(--ac); }
+.rail a[aria-current="page"] .n { color: var(--ac); }
+.rail a[aria-current="page"] .l { color: var(--ac-hi); }
+.rail .div { width: 60px; }
+.rail .chain { margin-top: auto; }
+
+.strip { grid-column: 1 / -1; display: flex; align-items: center; gap: 28px; padding: 0 16px 0 calc(var(--rail) + 16px); background: var(--bg0); border-top: 1px solid var(--line); font: 400 10px var(--f-mono); color: var(--tx-lo); white-space: nowrap; overflow: hidden; }
+.strip .right { margin-left: auto; }
+
+.main { min-height: 0; min-width: 0; padding: var(--gap); overflow: hidden; }

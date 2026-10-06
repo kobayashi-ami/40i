@@ -130,6 +130,26 @@ def sample_audio(sample_id: str):
     return FileResponse(p, media_type="audio/wav", filename=x.original_name)  # Range requests supported
 
 
+@router.get("/samples/{sample_id}/info")
+def sample_info(sample_id: str):
+    """File-header facts for the DETAIL panel (read on demand, not stored)."""
+    import soundfile as sf
+
+    _, p = _sample_file(sample_id)
+    i = sf.info(str(p))
+    return {"channels": i.channels, "subtype": i.subtype, "format": i.format, "bytes": p.stat().st_size}
+
+
+@router.get("/store")
+def store():
+    """Where the audio lives and how much of it there is (STORE panel)."""
+    root = L.data_dir()
+    size = sum(f.stat().st_size for f in root.rglob("*") if f.is_file())
+    home = Path.home()
+    shown = f"~/{root.relative_to(home)}" if root.is_relative_to(home) else str(root)
+    return {"data_dir": shown, "bytes": size}
+
+
 @router.get("/samples/{sample_id}/peaks")
 def sample_peaks(sample_id: str, n: int = 200):
     x, _ = _sample_file(sample_id)

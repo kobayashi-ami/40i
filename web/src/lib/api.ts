@@ -138,6 +138,8 @@ export const api = {
   patchSample: (id: string, body: Partial<Pick<Sample, "role" | "route">>) =>
     req<Sample>(`/api/samples/${id}`, { ...json(body), method: "PATCH" }),
   deleteSample: (id: string) => req<{ deleted: string }>(`/api/samples/${id}`, { method: "DELETE" }),
+  sampleInfo: (id: string) => req<{ channels: number; subtype: string; format: string; bytes: number }>(`/api/samples/${id}/info`),
+  store: () => req<{ data_dir: string; bytes: number }>("/api/store"),
   peaks: (id: string, n: number) => req<[number, number][]>(`/api/samples/${id}/peaks?n=${n}`),
   renders: (id: string) => req<Job[]>(`/api/samples/${id}/renders`),
   presets: () => req<Preset[]>("/api/presets"),
